@@ -1,0 +1,20 @@
+# AutoHotkey User Config & State
+Config.ini
+
+# Compiled Executables (distribute via GitHub Releases)
+*.exe
+
+# Temporary & Log Files
+*.tmp
+*.log
+*.bak
+
+# Windows System Files
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+# Editor Settings
+.vscode/
+.idea/
