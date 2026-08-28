@@ -17,7 +17,7 @@
 ; 描述：利用 Capslock 作为热键的空间管理以及输入增强 (双语中英 GUI 版)
 ; 作者：Peter
 ; 许可证：GNU General Public License v3.0 (GPLv3)
-; 版本：0.9 (2026-08)
+; 版本：0.4 (2026-08)
 ; ==========================================================
 
 ; --- 1. 管理员权限自动提权 ---
@@ -26,7 +26,7 @@ if !A_IsAdmin {
         if A_IsCompiled
             Run('*RunAs "' A_ScriptFullPath '" /restart')
         else
-            Run('*RunAs "' A_ScriptFullPath '" /restart "' A_ScriptFullPath '"')
+            Run('*RunAs "' A_AhkPath '" /restart "' A_ScriptFullPath '"')
     }
     ExitApp()
 }
