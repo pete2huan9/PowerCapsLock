@@ -12,8 +12,8 @@
 *h::Send "{Blind}{Left}"
 *j::Send "{Blind}{Down}"
 *l::Send "{Blind}{Right}"
-*i::Send "{Blind}{End}"
-*u::Send "{Blind}{Home}"
+*u::Send "{Blind}{End}"
+*i::Send "{Blind}{Home}"
 
 #HotIf GetKeyState("CapsLock", "P") && Config.InputMethod
 

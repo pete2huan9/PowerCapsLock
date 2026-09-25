@@ -1,27 +1,35 @@
 #Requires AutoHotkey v2.0
 
 ; ==============================================================================
-; 模块名称：WindowManager.ahk (Power-Rectangle 终极拓扑版)
+; 模块名称：WindowManager.ahk (Power-Rectangle 终极拓扑与分屏版)
 ; 核心逻辑：
-; 1. 绝对状态锁 (拓扑判定法：无视 Chrome 最小宽度强制锁定，只看物理贴边)
-; 2. 全屏快照拦截 (彻底消灭 Windows 还原时的幽灵坐标跨屏 Bug)
-; 3. 优雅分步跨屏 (解决异构屏幕 DPI 碰撞)
+; 1. 触发条件：Ctrl + CapsLock 按住触发
+; 2. 方向键 & Enter：1/2 屏分屏与智能最大化/还原
+; 3. D/F/G/E/T：1/3 与 2/3 三分屏与三分之二列式分屏
 ; ==============================================================================
 
 global WindowHistory := Map()
 
-; --- 1. 核心判定逻辑 (完全拦截版) ---
-#HotIf GetKeyState("CapsLock", "P") && Config.WindowManager
+; --- 1. 核心判定逻辑 ---
+#HotIf GetKeyState("Ctrl", "P") && GetKeyState("CapsLock", "P") && Config.WindowManager
 
+; 1/2 屏与最大化
 *Left::WM_DirectionalMove("Left")
 *Right::WM_DirectionalMove("Right")
 *Up::WM_DirectionalMove("Up")
 *Down::WM_DirectionalMove("Down")
 *Enter::WM_SmartToggleMaximize()
 
+; 1/3 与 2/3 列式分屏 (D: 左1/3, F: 中1/3, G: 右1/3, E: 左2/3, T: 右2/3)
+*d::WM_ColumnFraction("Left1_3")
+*f::WM_ColumnFraction("Center1_3")
+*g::WM_ColumnFraction("Right1_3")
+*e::WM_ColumnFraction("Left2_3")
+*t::WM_ColumnFraction("Right2_3")
+
 #HotIf
 
-; --- 2. 核心执行引擎 ---
+; --- 2. 核心执行引擎：方向键 1/2 屏分屏 ---
 WM_DirectionalMove(Dir) {
     ActiveWin := WinActive("A")
     if !ActiveWin
@@ -29,37 +37,24 @@ WM_DirectionalMove(Dir) {
 
     Monitors := WM_GetSortedMonitors()
 
-    ; --------------------------------------------------------------------------
-    ; 【全屏独立拦截器】：先快照，后还原，降维打击
-    ; --------------------------------------------------------------------------
     if (WinGetMinMax(ActiveWin) = 1) {
-        ; 1. 拍照留证：获取全屏时它到底在哪块屏幕
         snapInfo := WM_GetCurrentMonitorGrid(ActiveWin, Monitors)
         sm := snapInfo.Mon
-        
-        ; 2. 放虎归山：让系统去还原它 (哪怕它的幽灵跨屏了也不怕)
         WinRestore(ActiveWin)
         
-        ; 3. 降维打击：无视幽灵坐标，强制把它按在刚才快照屏幕的左/右半边
         if (Dir = "Left") {
             WinMove(sm.L, sm.T, sm.W / 2, sm.H, ActiveWin)
-            return ; 执行完毕，提前拦截结束！
+            return
         } 
         else if (Dir = "Right") {
             WinMove(sm.L + sm.W / 2, sm.T, sm.W / 2, sm.H, ActiveWin)
-            return ; 执行完毕，提前拦截结束！
+            return
         }
         else {
-            ; 如果全屏时按了 Up/Down，只做 Restore 还原，当做“逃生门”
             return 
         }
     }
 
-    ; --------------------------------------------------------------------------
-    ; 常规状态机逻辑 (实体墙与拓扑边缘判定)
-    ; --------------------------------------------------------------------------
-    
-    ; 获取精准的显示器管辖权
     mInfo := WM_GetCurrentMonitorGrid(ActiveWin, Monitors)
     m := mInfo.Mon
     CurIdx := mInfo.Idx
@@ -68,25 +63,16 @@ WM_DirectionalMove(Dir) {
     HalfW := m.W / 2
     HalfH := m.H / 2
 
-    ; 计算边缘贴合度 (容差 50px，对付隐形边框)
     Tol := 50
     isLeftEdge   := Abs(X - m.L) < Tol
     isRightEdge  := Abs((X + W) - m.R) < Tol
     isTopEdge    := Abs(Y - m.T) < Tol
     isBottomEdge := Abs((Y + H) - m.B) < Tol
 
-    ; --------------------------------------------------------------------------
-    ; 【绝对状态锁：拓扑判定版】(专治 Chrome 最小宽度限制)
-    ; --------------------------------------------------------------------------
     isFullHeight := isTopEdge && isBottomEdge
-
-    ; 只要贴住左边 + 上下顶满 + 没贴住右边(非全屏) -> 强制认定为左 1/2 屏
-    isLeftHalf  := isLeftEdge && isFullHeight && !isRightEdge
+    isLeftHalf   := isLeftEdge && isFullHeight && !isRightEdge
+    isRightHalf  := isRightEdge && isFullHeight && !isLeftEdge
     
-    ; 只要贴住右边 + 上下顶满 + 没贴住左边(非全屏) -> 强制认定为右 1/2 屏
-    isRightHalf := isRightEdge && isFullHeight && !isLeftEdge
-    
-    ; 1/4 屏同理：只要卡死在角落，就赋予状态，不再死抠宽高像素
     isTL := isLeftEdge && isTopEdge && !isBottomEdge && !isRightEdge
     isBL := isLeftEdge && isBottomEdge && !isTopEdge && !isRightEdge
     isTR := isRightEdge && isTopEdge && !isBottomEdge && !isLeftEdge
@@ -95,9 +81,6 @@ WM_DirectionalMove(Dir) {
     isQuarter := isTL || isBL || isTR || isBR
     isHalf    := isLeftHalf || isRightHalf
 
-    ; --------------------------------------------------------------------------
-    ; 状态 A：1/4 屏逻辑
-    ; --------------------------------------------------------------------------
     if (isQuarter) {
         if (Dir = "Left") {
             if (isTR)
@@ -105,7 +88,7 @@ WM_DirectionalMove(Dir) {
             else if (isBR)
                 WinMove(m.L, m.T + HalfH, HalfW, HalfH, ActiveWin) 
             else if (isTL || isBL)
-                WinMove(m.L, m.T, HalfW, m.H, ActiveWin) ; 撞左墙变 1/2
+                WinMove(m.L, m.T, HalfW, m.H, ActiveWin) 
         }
         else if (Dir = "Right") {
             if (isTL)
@@ -113,7 +96,7 @@ WM_DirectionalMove(Dir) {
             else if (isBL)
                 WinMove(m.L + HalfW, m.T + HalfH, HalfW, HalfH, ActiveWin) 
             else if (isTR || isBR)
-                WinMove(m.L + HalfW, m.T, HalfW, m.H, ActiveWin) ; 撞右墙变 1/2
+                WinMove(m.L + HalfW, m.T, HalfW, m.H, ActiveWin) 
         }
         else if (Dir = "Up") {
             if (isBL)
@@ -128,9 +111,6 @@ WM_DirectionalMove(Dir) {
                 WinMove(m.L + HalfW, m.T + HalfH, HalfW, HalfH, ActiveWin) 
         }
     }
-    ; --------------------------------------------------------------------------
-    ; 状态 B：竖向 1/2 屏逻辑 (优雅分步跨屏版)
-    ; --------------------------------------------------------------------------
     else if (isHalf) {
         if (Dir = "Left") {
             if (isRightHalf) {
@@ -139,12 +119,8 @@ WM_DirectionalMove(Dir) {
                 if (CurIdx > 1) {
                     prevM := Monitors[CurIdx - 1]
                     WinRestore(ActiveWin)
-                    
-                    ; --- 优雅解法：先转移阵地，再重塑形态 ---
                     tX := prevM.L + prevM.W/2
-                    ; 1. 仅平移 X 和 Y (省略 W 和 H 参数)
                     WinMove(tX, prevM.T, , , ActiveWin) 
-                    ; 2. 原地拉伸 W 和 H
                     WinMove(tX, prevM.T, prevM.W/2, prevM.H, ActiveWin) 
                 }
             }
@@ -156,16 +132,11 @@ WM_DirectionalMove(Dir) {
                 if (CurIdx < Monitors.Length) {
                     nextM := Monitors[CurIdx + 1]
                     WinRestore(ActiveWin)
-                    
-                    ; --- 优雅解法：先转移阵地，再重塑形态 ---
-                    ; 1. 仅平移
                     WinMove(nextM.L, nextM.T, , , ActiveWin) 
-                    ; 2. 原地拉伸
                     WinMove(nextM.L, nextM.T, nextM.W/2, nextM.H, ActiveWin) 
                 }
             }
         }
-        ; --- 1/4 屏垂直切换逻辑 ---
         else if (Dir = "Up" || Dir = "Down") {
             if (isLeftHalf)
                 WinMove(m.L, (Dir="Up" ? m.T : m.T + HalfH), HalfW, HalfH, ActiveWin) 
@@ -173,9 +144,6 @@ WM_DirectionalMove(Dir) {
                 WinMove(m.L + HalfW, (Dir="Up" ? m.T : m.T + HalfH), HalfW, HalfH, ActiveWin) 
         }
     }
-    ; --------------------------------------------------------------------------
-    ; 状态 C：游荡窗口兜底
-    ; --------------------------------------------------------------------------
     else {
         midX := X + W/2
         isMoreRight := (midX > m.L + HalfW)
@@ -192,7 +160,32 @@ WM_DirectionalMove(Dir) {
     }
 }
 
-; --- 3. 记忆缩放逻辑 ---
+; --- 3. 1/3 与 2/3 列式分屏 ---
+WM_ColumnFraction(Fraction) {
+    ActiveWin := WinActive("A")
+    if !ActiveWin
+        return
+
+    if (WinGetMinMax(ActiveWin) = 1)
+        WinRestore(ActiveWin)
+
+    Monitors := WM_GetSortedMonitors()
+    mInfo := WM_GetCurrentMonitorGrid(ActiveWin, Monitors)
+    m := mInfo.Mon
+
+    W1_3 := m.W / 3
+    W2_3 := (m.W * 2) / 3
+
+    switch Fraction {
+        case "Left1_3":   WinMove(m.L, m.T, W1_3, m.H, ActiveWin)
+        case "Center1_3": WinMove(m.L + W1_3, m.T, W1_3, m.H, ActiveWin)
+        case "Right1_3":  WinMove(m.L + 2 * W1_3, m.T, W1_3, m.H, ActiveWin)
+        case "Left2_3":   WinMove(m.L, m.T, W2_3, m.H, ActiveWin)
+        case "Right2_3":  WinMove(m.L + W1_3, m.T, W2_3, m.H, ActiveWin)
+    }
+}
+
+; --- 4. 智能最大化/还原与记忆缩放 ---
 WM_SmartToggleMaximize() {
     ActiveWin := WinActive("A")
     if !ActiveWin
@@ -210,7 +203,7 @@ WM_SmartToggleMaximize() {
     }
 }
 
-; --- 4. 空间拓扑工具函数 ---
+; --- 5. 空间拓扑工具函数 ---
 WM_GetSortedMonitors() {
     ms := []
     Loop MonitorGetCount() {
@@ -247,7 +240,6 @@ WM_GetCurrentMonitorGrid(hwnd, Monitors) {
     for i, mon in Monitors {
         closestX := Max(mon.L, Min(midX, mon.R))
         closestY := Max(mon.T, Min(midY, mon.B))
-        ; 修复了 Markdown 复制导致的乘方错误，恢复了 AHK 语法的 **2
         dist := Sqrt((midX - closestX)**2 + (midY - closestY)**2)
         if (dist < minDist) {
             minDist := dist

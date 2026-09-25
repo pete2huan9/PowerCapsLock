@@ -1,6 +1,7 @@
 # ⚡ PowerCapsLock
 
 [![AutoHotkey v2](https://img.shields.io/badge/AutoHotkey-v2.0-blue.svg)](https://www.autohotkey.com/)
+[![Version](https://img.shields.io/badge/Version-v0.4.1-brightgreen.svg)](https://github.com/pete2huan9/PowerCapsLock/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-0078D6.svg)](https://www.microsoft.com/)
 [![License](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
@@ -17,13 +18,16 @@
   - Position memory (remains where you place it when switching themes or languages).
 
 - **🔤 Vim Navigation Layer** (`Modules/VimNavigation.ahk`):
-  - `CapsLock + H / J / K / L`: Left / Down / Up / Right navigation.
-  - `CapsLock + U / I`: Home / End navigation.
+  - `CapsLock + H / J / K / L`: Left / Down / Up / Right cursor navigation.
+  - `CapsLock + U`: End navigation.
+  - `CapsLock + I`: Home navigation.
 
 - **🪟 Smart Window Topology Manager** (`Modules/WindowManager.ahk`):
-  - `CapsLock + Left / Right`: Snap active window to Left 1/2 or Right 1/2 half-screen.
-  - `CapsLock + Up / Down`: Quarter-screen / vertical snapping.
-  - `CapsLock + Enter`: Smart maximize / restore with position memory.
+  - Triggered by holding **`Ctrl` + `CapsLock`** (prevents conflicts with Vim navigation).
+  - `Ctrl + CapsLock + Left / Right`: Snap active window to Left 1/2 or Right 1/2 half-screen.
+  - `Ctrl + CapsLock + D / F / G`: Column 1/3 snapping (Left 1/3, Center 1/3, Right 1/3).
+  - `Ctrl + CapsLock + E / T`: Column 2/3 snapping (Left 2/3, Right 2/3).
+  - `Ctrl + CapsLock + Enter`: Smart maximize / restore with position memory.
   - Seamless multi-monitor spanning and DPI awareness.
 
 - **🌐 Instant Input Method Switcher** (`Modules/InputMethod.ahk`):
@@ -48,7 +52,7 @@
 1. Download and install [AutoHotkey v2](https://www.autohotkey.com/).
 2. Clone or download this repository:
    ```bash
-   git clone https://github.com/your-username/PowerCapsLock.git
+   git clone https://github.com/pete2huan9/PowerCapsLock.git
    ```
 3. Double-click `Main.ahk` to start.
 
@@ -67,10 +71,12 @@
 | **`Ctrl` + `Alt` + `P`** | Open / Hide Dashboard GUI |
 | **`Ctrl` + `Alt` + `R`** | Reload PowerCapsLock |
 | **`CapsLock` + `H/J/K/L`** | Vim Cursor Left / Down / Up / Right |
-| **`CapsLock` + `U/I`** | Home / End |
+| **`CapsLock` + `U / I`** | End / Home |
 | **`CapsLock` + `Space`** | Chinese ↔ Japanese Input Switch |
-| **`CapsLock` + `Arrows`** | Window Half-Screen / Quarter-Screen Snapping |
-| **`CapsLock` + `Enter`** | Maximize / Restore Window |
+| **`Ctrl` + `CapsLock` + `Arrows`** | Window Half-Screen Snapping |
+| **`Ctrl` + `CapsLock` + `Enter`** | Maximize / Restore Window |
+| **`Ctrl` + `CapsLock` + `D / F / G`** | Left 1/3 / Center 1/3 / Right 1/3 Column Snapping |
+| **`Ctrl` + `CapsLock` + `E / T`** | Left 2/3 / Right 2/3 Column Snapping |
 | **Hold `PgUp` / `PgDn`** | Home / End (980 Keyboard Mode) |
 | **Double-Click Tray Icon** | Open Dashboard GUI |
 
@@ -107,4 +113,3 @@ To build your own standalone `.exe`:
 ## 📄 License
 
 This project is licensed under the [GNU General Public License v3.0](LICENSE).
-

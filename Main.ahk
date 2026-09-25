@@ -17,7 +17,7 @@
 ; 描述：利用 Capslock 作为热键的空间管理以及输入增强 (双语中英 GUI 版)
 ; 作者：Peter
 ; 许可证：GNU General Public License v3.0 (GPLv3)
-; 版本：0.4 (2026-08)
+; 版本：0.4.1 (2026-09)
 ; ==========================================================
 
 ; --- 1. 管理员权限自动提权 ---
@@ -61,7 +61,7 @@ global LangMap := Map(
         "Subtitle", "功能模块管理与界面设置 (自动保存)",
         "GrpModules", " 核心功能模块开关 ",
         "chkVim", "🔤 Vim 光标导航 (CapsLock + H/J/K/L/I/U)",
-        "chkWin", "🪟 窗口分屏管理 (CapsLock + 箭头 / Enter)",
+        "chkWin", "🪟 窗口分屏管理 (Ctrl + CapsLock + 箭头 / Enter)",
         "chkIME", "🌐 中日/中英输入法切换 (CapsLock + Space / 短按)",
         "chkNum", "🔢 小键盘常驻数字 (关灯优先输出数字)",
         "chk980", "⌨️ 980 键盘增强 (长按 PgUp->Home, PgDn->End)",
@@ -88,7 +88,7 @@ global LangMap := Map(
         "Subtitle", "Module Controls && UI Settings (Auto-Saved)",
         "GrpModules", " Core Feature Modules ",
         "chkVim", "🔤 Vim Navigation (CapsLock + H/J/K/L/I/U)",
-        "chkWin", "🪟 Window Manager (CapsLock + Arrows / Enter)",
+        "chkWin", "🪟 Window Manager (Ctrl + CapsLock + Arrows / Enter)",
         "chkIME", "🌐 Input Method Switcher (CapsLock + Space / Tap)",
         "chkNum", "🔢 Numpad Always Numbers (Keep NumLock OFF)",
         "chk980", "⌨️ 980 (Hold PgUp->Home, PgDn->End)",
